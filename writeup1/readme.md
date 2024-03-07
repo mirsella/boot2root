@@ -39,3 +39,52 @@ trying to find something, we can `ls` the `/home` dir and get `LOOKATME ft_root 
 the only dir we can access is `LOOKATME`, where there a single `password` file with `lmezard:G!@M6f4Eatau{sF"` inside.
 
 ssh don't work, but ftp does.
+
+we can see two file, a readme with `Complete this little challenge and use the result as password for user 'laurie' to login in ssh` and a `fun` named file. using the `file` command we can see it's archive.
+
+the archive is 750 .pcap files, but that are just text file and not packet captures.
+each file seems to contain C code. a file contain the main function:
+
+```c
+int main() {
+        printf("M");
+        printf("Y");
+        printf(" ");
+        printf("P");
+        printf("A");
+        printf("S");
+        printf("S");
+        printf("W");
+        printf("O");
+        printf("R");
+        printf("D");
+        printf(" ");
+        printf("I");
+        printf("S");
+        printf(":");
+        printf(" ");
+        printf("%c",getme1());
+        printf("%c",getme2());
+        printf("%c",getme3());
+        printf("%c",getme4());
+        printf("%c",getme5());
+        printf("%c",getme6());
+        printf("%c",getme7());
+        printf("%c",getme8());
+        printf("%c",getme9());
+        printf("%c",getme10());
+        printf("%c",getme11());
+        printf("%c",getme12());
+        printf("\n");
+        printf("Now SHA-256 it and submit");
+}
+```
+
+and some other files contain part of the getmeX function that return a char.
+and most importantly, each file contain a comment like this `//file254` which probably indicate the order of the file.
+
+to reconstruct the code we can write a simple script: `for i in {1..750}; do echo | cat $(rg -l "file$i$") - >> main.c; done`
+then `cc main.c` and `./a.out`: `MY PASSWORD IS: Iheartpwnage
+Now SHA-256 it and submit`
+so `echo -n Iheartpwnage | sha256sum`: `330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4`
+which allow us to ssh into the laurie user.
