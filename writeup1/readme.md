@@ -88,3 +88,177 @@ then `cc main.c` and `./a.out`: `MY PASSWORD IS: Iheartpwnage
 Now SHA-256 it and submit`
 so `echo -n Iheartpwnage | sha256sum`: `330b845f32185747e4f8ca15d40ca59796035c89ea809fb5d30f4da83ecf45a4`
 which allow us to ssh into the laurie user.
+
+there is a readme:
+
+> Diffuse this bomb!
+> When you have all the password use it as "thor" user with ssh.
+>
+> HINT:
+> P
+> 2
+> b
+>
+> o
+> 4
+>
+> NO SPACE IN THE PASSWORD (password is case sensitive).
+
+and a binary `bomb`, we copy it on our host to analyze it using a decompiler, like binaryninja.
+![bomb main decompiled](./bomb_main.png)
+we can see the main function with multiples phases.
+
+the phase1 function just check if the input is `Public speaking is very easy.`.
+
+```c
+08048b20  {
+08048b32      int32_t eax_1 = strings_not_equal(arg1, "Public speaking is very easy.");
+08048b3c      if (eax_1 == 0)
+08048b3a      {
+08048b46          return eax_1;
+08048b46      }
+08048b3e      explode_bomb();
+08048b3e      /* no return */
+08048b3e  }
+```
+
+the phase 2 read 6 number from the user, and check if each number follow this rule `f(x + 1) = f(x) * x`.
+we know from the hint that the second number is 2, so we can deduce the first number is 1, and just use the function above for the rest: `1 2 6 24 120 720`.
+
+```c
+08048b48  {
+08048b5b      int32_t var_1c;
+08048b5b      read_six_numbers(arg1, &var_1c);
+08048b67      if (var_1c != 1)
+08048b63      {
+08048b69          explode_bomb();
+08048b69          /* no return */
+08048b69      }
+08048b6e      int32_t i = 1;
+08048b8c      int32_t eax_2;
+08048b8c      do
+08048b8c      {
+08048b79          void var_20;
+08048b79          eax_2 = ((i + 1) * *(uint32_t*)(&var_20 + (i << 2)));
+08048b81          if (&var_1c[i] != eax_2)
+08048b7e          {
+08048b83              explode_bomb();
+08048b83              /* no return */
+08048b83          }
+08048b88          i = (i + 1);
+08048b88      } while (i <= 5);
+08048b96      return eax_2;
+08048b96  }
+```
+
+phase3 read a number, a char, and a number. from the hint we know the char is `b`. renaming the variable we can easily understand the few checks hapenning, and find that the only correct input to get `b` is `1`, and in this case the second number must be `214`.
+
+```c
+08048b98  {
+08048bc2      int32_t a;
+08048bc2      char b;
+08048bc2      int32_t c;
+08048bc2      if (sscanf(arg1, "%d %c %d", &a, &b, &c) <= 2)
+08048bbf      {
+08048bc4          explode_bomb();
+08048bc4          /* no return */
+08048bc4      }
+08048bcd      int32_t ebx;
+08048bcd      if (a > 7)
+08048bc9      {
+08048c88          ebx = 0x78;
+08048c8a          explode_bomb();
+08048c8a          /* no return */
+08048c8a      }
+08048bd3      int32_t a_1 = a;
+08048bd6      switch (a_1)
+08048bd6      {
+08048be0          case 0:
+08048be0          {
+08048be0              ebx = 'q';
+08048be9              if (c != 777)
+08048be2              {
+08048bef                  explode_bomb();
+08048bef                  /* no return */
+08048bef              }
+08048bef              break;
+08048bef          }
+08048c00          case 1:
+08048c00          {
+08048c00              ebx = 'b';
+08048c09              if (c != 214)
+08048c02              {
+08048c0f                  explode_bomb();
+08048c0f                  /* no return */
+08048c0f              }
+08048c0f              break;
+08048c0f          }
+08048c16          case 2:
+08048c16          {
+08048c16              ebx = 'b';
+08048c1f              if (c != 755)
+08048c18              {
+08048c21                  explode_bomb();
+08048c21                  /* no return */
+08048c21              }
+08048c21              break;
+08048c21          }
+08048c28          case 3:
+08048c28          {
+08048c28              ebx = 'k';
+08048c31              if (c != 251)
+08048c2a              {
+08048c33                  explode_bomb();
+08048c33                  /* no return */
+08048c33              }
+08048c33              break;
+08048c33          }
+08048c40          case 4:
+08048c40          {
+08048c40              ebx = 'o';
+08048c49              if (c != 160)
+08048c42              {
+08048c4b                  explode_bomb();
+08048c4b                  /* no return */
+08048c4b              }
+08048c4b              break;
+08048c4b          }
+08048c52          case 5:
+08048c52          {
+08048c52              ebx = 't';
+08048c5b              if (c != 458)
+08048c54              {
+08048c5d                  explode_bomb();
+08048c5d                  /* no return */
+08048c5d              }
+08048c5d              break;
+08048c5d          }
+08048c64          case 6:
+08048c64          {
+08048c64              ebx = 'v';
+08048c6d              if (c != 780)
+08048c66              {
+08048c6f                  explode_bomb();
+08048c6f                  /* no return */
+08048c6f              }
+08048c6f              break;
+08048c6f          }
+08048c76          case 7:
+08048c76          {
+08048c76              ebx = 'b';
+08048c7f              if (c != 524)
+08048c78              {
+08048c81                  explode_bomb();
+08048c81                  /* no return */
+08048c81              }
+08048c81              break;
+08048c81          }
+08048c81      }
+08048c92      if (ebx == b)
+08048c8f      {
+08048c9f          return a_1;
+08048c9f      }
+08048c94      explode_bomb();
+08048c94      /* no return */
+08048c94  }
+```
