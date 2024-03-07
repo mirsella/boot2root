@@ -334,6 +334,7 @@ using a simple script (see the script dir) we are able to find `opekma`
 ```
 
 phase6: the code wasn't readable, so i wrote a bruteforce program (see script) in rust that try every permutations of digit 0 to 9, and find `4 2 6 3 1 5`.
+the subject warn us about this part: `For the part related to a (bin) bomb: If the password found is 123456. The password to use is 123546.` so we will just swap the 1 and 3.
 
 ```c
 08048d98  int32_t phase_6(char* arg1)
@@ -396,3 +397,5 @@ phase6: the code wasn't readable, so i wrote a bruteforce program (see script) i
 08048e90      return eax_8
 
 ```
+
+so the final password is `Publicspeakingisveryeasy.126241207201b2149opekma426315`
