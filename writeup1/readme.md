@@ -151,7 +151,7 @@ we know from the hint that the second number is 2, so we can deduce the first nu
 08048b96  }
 ```
 
-phase3 read a number, a char, and a number. from the hint we know the char is `b`. renaming the variable we can easily understand the few checks hapenning, and find that the only correct input to get `b` is `1`, and in this case the second number must be `214`.
+phase3 read a number, a char, and a number. from the hint we know the char is `b`. renaming the variable we can easily understand the few checks happening, and find that the only correct input to get `b` is `1`, and in this case the second number must be `214`.
 
 ```c
 08048b98  {
@@ -261,4 +261,138 @@ phase3 read a number, a char, and a number. from the hint we know the char is `b
 08048c94      explode_bomb();
 08048c94      /* no return */
 08048c94  }
+```
+
+phase4 `func4` seems to be a fibonacci function and the input a single digit not zero. we must find which index into the suite return 55, which is 9 (from google).
+
+```c
+08048ca0  int32_t func4(int32_t arg)
+08048ca0  {
+08048cae      int32_t ret;
+08048cae      if (arg <= 1)
+08048cab      {
+08048cd0          ret = 1;
+08048cd0      }
+08048cb7      else
+08048cb7      {
+08048cb7          int32_t res = func4((arg - 1));
+08048cca          ret = (func4((arg - 2)) + res);
+08048cca      }
+08048cdd      return ret;
+08048cdd  }
+
+08048ce0  int32_t phase_4(char* arg1)
+
+08048ce0  {
+08048d07      int32_t input;
+08048d07      if ((sscanf(arg1, &data_8049808, &input) == 1 && input > 0))
+08048d03      {
+08048d15          int32_t res = func4(input);
+08048d20          if (res == 55)
+08048d1d          {
+08048d2a              return res;
+08048d2a          }
+08048d22          explode_bomb();
+08048d22          /* no return */
+08048d22      }
+08048d09      explode_bomb();
+08048d09      /* no return */
+08048d09  }
+```
+
+phase5 we need a input of 6 char, and the function will transform it using by doing a binary "and" by 0xf (15) and then as a index into a char table, and compare it to `giants`.
+we need to find the char that when AND by 0xf gives us 15, 0, 5, 11, 13, 1 (their index into the char table)
+using a simple script (see the script dir) we are able to find `opekma`
+
+```c
+08048d2c  {
+08048d46      if (string_length(arg) != 6)
+08048d43      {
+08048d48          explode_bomb();
+08048d48          /* no return */
+08048d48      }
+08048d4d      int32_t i = 0;
+08048d69      void string;
+08048d69      do
+08048d69      {
+08048d57          int32_t eax;
+08048d57          eax = arg[i];
+08048d5a          eax = (eax & 0xf);
+08048d5f          eax = *(uint8_t*)(((int32_t)eax) + "isrveawhobpnutfg");
+08048d62          *(uint8_t*)(i + &string) = eax;
+08048d65          i = (i + 1);
+08048d65      } while (i <= 5);
+08048d6b      char var_6 = 0;
+08048d7b      int32_t string_not_equal = strings_not_equal(&string, "giants");
+08048d85      if (string_not_equal == 0)
+08048d83      {
+08048d94          return string_not_equal;
+08048d94      }
+08048d87      explode_bomb();
+08048d87      /* no return */
+08048d87  }
+```
+
+phase6: the code wasn't readable, so i wrote a bruteforce program (see script) in rust that try every permutations of digit 0 to 9, and find `4 2 6 3 1 5`.
+
+```c
+08048d98  int32_t phase_6(char* arg1)
+
+08048d9f      void* esi
+08048d9f      void* var_58 = esi
+08048db3      void var_1c
+08048db3      read_six_numbers(arg1, &var_1c)
+08048db8      int32_t i = 0
+08048e00      do
+08048dca          if (*(&var_1c + (i << 2)) - 1 u> 5)
+08048dcc              explode_bomb()
+08048dcc              noreturn
+08048dd1          int32_t j = i + 1
+08048dd7          if (j s<= 5)
+08048dfa              do
+08048def                  if (*((i << 2) + &var_1c) == *(&var_1c + (j << 2)))
+08048df1                      explode_bomb()
+08048df1                      noreturn
+08048df6                  j = j + 1
+08048df6              while (j s<= 5)
+08048dfc          i = i + 1
+08048dfc      while (i s<= 5)
+08048e02      int32_t i_1 = 0
+08048e42      int32_t* var_34
+08048e42      do
+08048e10          void* esi_3 = &node1
+08048e13          int32_t j_1 = 1
+08048e18          int32_t eax_5 = i_1 << 2
+08048e24          if (1 s< *(eax_5 + &var_1c))
+08048e29              esi_3 = &node1
+08048e36              do
+08048e30                  esi_3 = *(esi_3 + 8)
+08048e33                  j_1 = j_1 + 1
+08048e33              while (j_1 s< *(eax_5 + &var_1c))
+08048e0a          (&var_34)[i_1] = esi_3
+08048e3e          i_1 = i_1 + 1
+08048e3e      while (i_1 s<= 5)
+08048e44      int32_t* esi_4 = var_34
+08048e47      int32_t* var_38 = esi_4
+08048e4a      int32_t i_2 = 1
+08048e5e      do
+08048e52          int32_t* eax_7 = (&var_34)[i_2]
+08048e55          esi_4[2] = eax_7
+08048e58          esi_4 = eax_7
+08048e5a          i_2 = i_2 + 1
+08048e5a      while (i_2 s<= 5)
+08048e60      esi_4[2] = 0
+08048e6a      int32_t i_3 = 0
+08048e6c      int32_t* esi_6 = var_38
+08048e85      int32_t eax_8
+08048e85      do
+08048e73          eax_8 = *esi_6
+08048e77          if (eax_8 s< *esi_6[2])
+08048e79              explode_bomb()
+08048e79              noreturn
+08048e7e          esi_6 = esi_6[2]
+08048e81          i_3 = i_3 + 1
+08048e81      while (i_3 s<= 4)
+08048e90      return eax_8
+
 ```
