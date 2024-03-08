@@ -1,9 +1,7 @@
 lot of informations and tools to test
 https://swisskyrepo.github.io/InternalAllTheThings/redteam/escalation/linux-privilege-escalation/#tools
 
-sudoedit should also work
-
-fusermount should also work:
+fusermount should work:
 Details: http://seclists.org/oss-sec/2015/q2/520
 Exposure: probable
 Tags: debian=7.0|8.0,[ ubuntu=* ]
