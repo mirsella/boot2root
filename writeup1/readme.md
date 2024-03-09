@@ -302,7 +302,16 @@ phase4 `func4` seems to be a fibonacci function and the input a single digit not
 
 phase5 we need a input of 6 char, and the function will transform it using by doing a binary "and" by 0xf (15) and then as a index into a char table, and compare it to `giants`.
 we need to find the char that when AND by 0xf gives us 15, 0, 5, 11, 13, 1 (their index into the char table)
-using a simple script (see the script dir) we are able to find `opekma`
+using a simple script (see the script dir) we are able to find multiples solutions:
+
+```
+opemka
+opukma
+opekmq
+opukmq
+```
+
+and the code:
 
 ```c
 08048d2c  {
@@ -398,4 +407,33 @@ the subject warn us about this part: `For the part related to a (bin) bomb: If t
 
 ```
 
-so the final password is `Publicspeakingisveryeasy.126241207201b2149opekma426315`
+so the final possible password are:
+`Publicspeakingisveryeasy.126241207201b2149opekma426135`
+`Publicspeakingisveryeasy.126241207201b2149opukma426135`
+`Publicspeakingisveryeasy.126241207201b2149opekmq426135`
+`Publicspeakingisveryeasy.126241207201b2149opukmq426135`
+
+the third one `Publicspeakingisveryeasy.126241207201b2149opekmq426135` worked !
+there is a readme: `Finish this challenge and use the result as password for 'zaz' user. `
+and a turtle file: ```
+[...]
+Avance 1 spaces
+Tourne droite de 1 degrees
+Avance 50 spaces
+
+Avance 100 spaces
+Recule 200 spaces
+Avance 100 spaces
+Tourne droite de 90 degrees
+Avance 100 spaces
+Tourne droite de 90 degrees
+Avance 100 spaces
+Recule 200 spaces
+
+Can you digest the message? :)
+
+```
+with instructions to draw something, and a clue at the end, which probably mean we need to digest the drawing using a hashing method like sha256 or md5.
+```
+
+we wrote a simple script to draw the turtle instructions, which reveal the word `SLASH`.
