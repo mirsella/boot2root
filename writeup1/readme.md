@@ -414,8 +414,11 @@ so the final possible password are:
 `Publicspeakingisveryeasy.126241207201b2149opukmq426135`
 
 the third one `Publicspeakingisveryeasy.126241207201b2149opekmq426135` worked !
+
 there is a readme: `Finish this challenge and use the result as password for 'zaz' user. `
-and a turtle file: ```
+
+and a turtle file: 
+```
 [...]
 Avance 1 spaces
 Tourne droite de 1 degrees
@@ -431,10 +434,9 @@ Avance 100 spaces
 Recule 200 spaces
 
 Can you digest the message? :)
+```
 
-```
 with instructions to draw something, and a clue at the end, which probably mean we need to digest the drawing using a hashing method like sha256 or md5.
-```
 
 we wrote a simple script to draw the turtle instructions, which reveal the word `SLASH`.
 i tried to ssh with the sha256 of the word, but it didn't work, so i tried with another digest, md5 (646da671ca01bb5d84dbb5fb2238dc8e), and it worked.
