@@ -29,7 +29,7 @@ fn main() {
         let output = child.wait_with_output().unwrap();
         if output.status.code() != Some(8) {
             println!("Found valid combination by exit code: {}", last_input);
-            break;
+            return;
         }
     }
     println!("Done, didn't find a valid combination.");
