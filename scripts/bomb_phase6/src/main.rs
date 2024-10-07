@@ -11,7 +11,9 @@ fn main() {
         "opekma\n",
     ];
 
-    for combo in (0..=9).permutations(6) {
+    for mut combo in (0..=9).permutations(5) {
+        // we know from the hints that the first number if 4
+        combo.insert(0, 4);
         let last_input = combo.iter().join(" ") + "\n";
         let mut child = Command::new("./bomb")
             .stdin(Stdio::piped())
